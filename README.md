@@ -260,11 +260,7 @@ The dual-storage design ensures that data remains available even during temporar
 
 ## 📱 Dashboard Preview
 
-Add screenshots of your Blynk dashboard here.
 
-```text
-docs/dashboard_mobile.png
-docs/dashboard_graphs.png
 ```
 
 ---
