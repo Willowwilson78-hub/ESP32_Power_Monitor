@@ -1,382 +1,301 @@
-# 🌊 Solar-Powered Smart Aquaculture Monitoring & Automation System
+# ⚡ Smart Energy Monitoring System
 
-<p align="center">
-  <strong>An affordable IoT-based water quality monitoring and automated aeration system for aquaculture ponds.</strong>
-</p>
+### IoT-Based Electrical Energy Monitoring using ESP32-C3, ESP8266 and Blynk Cloud
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Platform-ESP32%20%7C%20ESP8266-blue?style=for-the-badge&logo=espressif" />
-  <img src="https://img.shields.io/badge/Communication-ESP--NOW-orange?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Power-Solar%20Energy-yellow?style=for-the-badge&logo=solarpower" />
-  <img src="https://img.shields.io/badge/Project-IoT-green?style=for-the-badge" />
-</p>
+Monitor electrical energy consumption in real time through local visualization and cloud-based analytics.
+
+![Platform](https://img.shields.io/badge/Platform-ESP32--C3-blue)
+![WiFi](https://img.shields.io/badge/WiFi-ESP8266-green)
+![Cloud](https://img.shields.io/badge/Cloud-Blynk-orange)
+![Framework](https://img.shields.io/badge/Framework-Arduino-red)
+![Status](https://img.shields.io/badge/Status-Development-yellow)
 
 ---
 
 ## 📖 Overview
 
-This project aims to develop a cost-effective, solar-powered IoT system for monitoring and controlling water quality in aquaculture ponds.
+The Smart Energy Monitoring System is an IoT-based solution designed to measure, process, and visualize electrical consumption data at a main electrical distribution point.
 
-By combining ESP32-C3 and ESP8266 microcontrollers, the system collects essential water quality parameters, transmits sensor data wirelessly, and automatically controls aeration equipment when dangerous environmental conditions are detected.
+Unlike conventional plug-in energy meters that only monitor individual appliances, this system is intended for monitoring larger electrical installations through non-invasive current sensing.
 
-Instead of relying on expensive LoRa modules, the system utilizes **ESP-NOW (2.4 GHz)** for wireless communication between devices, reducing hardware costs while maintaining an efficient communication architecture.
+The project utilizes a dual-microcontroller architecture:
 
-The system also integrates cloud connectivity, real-time notifications, historical data logging, and remote control capabilities.
+- **ESP32-C3** for sensor acquisition, calculation, and local display.
+- **ESP8266** for Wi-Fi communication and cloud integration through Blynk.
 
-### 🎯 Main Objectives
-
-- Monitor water quality through pH, dissolved oxygen (DO), and temperature sensors.
-- Automatically activate aeration equipment when dissolved oxygen reaches dangerous levels.
-- Detect potential eutrophication through pH fluctuation analysis.
-- Operate independently using solar energy and battery storage.
-- Provide real-time monitoring and remote control through IoT platforms.
-- Maintain local data records even during Wi-Fi outages.
-- Minimize hardware expenses by utilizing affordable microcontrollers and existing components.
+The collected data is displayed locally and uploaded periodically for remote monitoring and historical analysis.
 
 ---
 
-## 🏗️ System Architecture
+## ✨ Key Features
 
-The system consists of three primary hardware nodes and a mobile monitoring interface.
+- ⚡ Real-time current and voltage measurement
+- 📊 Apparent and real power calculation
+- 🔌 Non-invasive current sensing using SCT-013
+- 📺 Local TFT display visualization
+- 📡 UART communication between controllers
+- ☁️ Blynk cloud integration
+- 📱 Mobile dashboard monitoring
+- 📈 Historical consumption analysis
+- 🕒 90-minute reporting interval
+- 📉 Long-term energy trend visualization
 
-| Component | Microcontroller | Primary Responsibility |
-|:---|:---|:---|
-| Sensor Node | ESP8266 #1 | Water quality monitoring |
-| Central Controller | ESP32-C3 | Data processing, HMI, logging, and relay control |
-| Wi-Fi Gateway | ESP8266 #2 | Cloud connectivity and remote communication |
-| Mobile Interface | Blynk IoT & Telegram | Monitoring, notifications, and remote control |
+---
 
-### Architecture Diagram
+## 🏗 System Architecture
 
 ```mermaid
 flowchart TD
-    A["🌊 Aquaculture Pond"]
 
-    subgraph SENSOR["Sensor Node - ESP8266 #1"]
-        B["pH Sensor"]
-        C["Dissolved Oxygen Sensor"]
-        D["Water Temperature Sensor"]
-        E["Solar Power & Battery"]
-        F["Deep Sleep & ESP-NOW"]
-    end
+A[Electrical Supply] --> B[SCT-013 Current Sensor]
+A --> C[AC Voltage Sensor]
 
-    subgraph CENTRAL["Central Controller - ESP32-C3"]
-        G["ESP-NOW Receiver"]
-        H["Data Processing"]
-        I["TFT Display (HMI)"]
-        J["MicroSD CSV Logger"]
-        K["Automated Relay Control"]
-        L["Eutrophication Analysis"]
-    end
+B --> D[ESP32-C3]
+C --> D
 
-    subgraph GATEWAY["Wi-Fi Gateway - ESP8266 #2"]
-        M["UART Communication"]
-        N["Wi-Fi Connectivity"]
-    end
+D --> E[TFT Display]
 
-    subgraph CLOUD["Cloud & Mobile Interface"]
-        O["Blynk IoT Dashboard"]
-        P["Telegram Bot"]
-    end
+D -->|UART| F[ESP8266]
 
-    A --> SENSOR
-    B --> F
-    C --> F
-    D --> F
-    E --> SENSOR
+F --> G[Wi-Fi Network]
 
-    F -->|"ESP-NOW 2.4 GHz"| G
+G --> H[Blynk Cloud]
 
-    G --> H
-    H --> I
-    H --> J
-    H --> K
-    H --> L
-
-    H <-->|"UART"| M
-    M <--> N
-    N <-->|"Wi-Fi / Internet"| O
-    N --> P
-
-    O -->|"Remote Commands"| N
-    N --> M
-    M --> K
+H --> I[Mobile Dashboard]
+H --> J[Historical Analytics]
 ```
 
 ---
 
-## ⚙️ Core Features
+## 🔄 System Workflow
 
-### 1. 🌡️ Water Quality Monitoring
+```mermaid
+flowchart LR
 
-The sensor node continuously collects essential environmental parameters.
+S[Sensors] --> P[ESP32-C3 Processing]
 
-| Parameter | Sensor | Purpose |
-|:---|:---|:---|
-| pH | Industrial pH Probe | Monitor water acidity and alkalinity |
-| Dissolved Oxygen (DO) | DO Sensor | Monitor oxygen availability for aquatic organisms |
-| Water Temperature | Temperature Sensor | Monitor water temperature variations |
+P --> D[TFT Display]
 
-The collected measurements are transmitted to the central controller for processing and storage.
+P --> U[UART Transfer]
 
-### 2. 📡 ESP-NOW Wireless Communication
+U --> W[ESP8266]
 
-The project uses ESP-NOW as a low-overhead wireless communication protocol between ESP8266 and ESP32-C3 devices.
+W --> B[Blynk Server]
 
-**Key characteristics:**
-- Operates on the 2.4 GHz frequency band.
-- Eliminates the need for separate LoRa communication modules.
-- Designed for short, periodic wireless data transmissions.
-- Reduces unnecessary radio activity to conserve energy.
+B --> M[Mobile Application]
 
-The proposed sensor node sends measurement packets approximately every 90 minutes, with deep sleep enabled between measurement cycles.
+B --> A[Historical Analysis]
+```
 
-The initial design targets an outdoor communication range of approximately 80–150 meters, depending on environmental and hardware conditions.
+---
 
-### 3. ☀️ Solar-Powered Operation
+## 📡 Data Flow
 
-The sensor node is designed to operate independently using:
+```mermaid
+sequenceDiagram
 
-- Solar panels.
-- Battery storage.
-- Battery charging circuitry.
-- ESP8266 Deep Sleep mode.
+participant Sensor
+participant ESP32
+participant ESP8266
+participant Blynk
+participant User
 
-This approach minimizes power consumption and reduces dependence on conventional electrical infrastructure.
+Sensor->>ESP32: Voltage & Current Data
+ESP32->>ESP32: Process Electrical Measurements
+ESP32->>ESP8266: UART Transmission
+ESP8266->>Blynk: Upload Data
+Blynk->>User: Dashboard Visualization
+```
 
-### 4. ⚡ Automated Aeration Control
+---
 
-The central ESP32-C3 controller manages the aeration equipment through a relay module.
+## 🔧 Hardware Components
 
-**Automatic Mode:**
+| Component | Function |
+|------------|------------|
+| ESP32-C3 | Main controller and data processor |
+| ESP8266 | Wi-Fi and cloud communication |
+| SCT-013 | AC current measurement |
+| AC Voltage Sensor | Voltage monitoring |
+| 1.8-inch TFT Display | Local parameter visualization |
+| UART Connection | Controller communication |
+| Power Supply | System power source |
 
-1. Receive water quality measurements.
-2. Evaluate the dissolved oxygen level.
-3. Activate the aeration relay when DO falls below the configured threshold.
-4. Deactivate aeration when the oxygen level returns to the configured safe range.
+---
 
-Example control threshold:
+## 📊 Measured Parameters
 
-| Condition | Action |
-|:---|:---|
-| DO below 3.0 mg/L | Activate aeration |
-| DO returns to safe range | Deactivate aeration |
+| Parameter | Unit | Description |
+|------------|--------|------------|
+| Current | A | Electrical current |
+| Voltage | V | AC supply voltage |
+| Apparent Power | VA | Voltage × Current |
+| Real Power | W | Power considering power factor |
+| Energy Consumption | kWh | Accumulated energy usage |
 
-Thresholds and switching behavior must be calibrated for the specific aquaculture environment.
-
-**Manual Mode:**
-
-Users can remotely send commands through the Blynk IoT application.
-
-Commands are transmitted through the following communication path:
-
-`Blynk → Wi-Fi Gateway → UART → ESP32-C3 → Relay`
-
-### 5. 🧪 Eutrophication Risk Detection
-
-The system incorporates an early-warning approach to identify potential eutrophication events.
-
-It analyzes daily pH fluctuations alongside dissolved oxygen measurements.
-
-**pH fluctuation calculation:**
+### Apparent Power
 
 ```text
-ΔpH = Maximum Afternoon pH - Minimum Morning pH
+S = Voltage × Current
 ```
 
-The system stores pH measurements over a 24-hour period and evaluates their daily variation.
+Where:
 
-An initial warning condition is:
+- S = Apparent Power (VA)
+- Voltage = RMS Voltage
+- Current = RMS Current
 
-- ΔpH exceeds approximately 1.0–1.2.
-- Dissolved oxygen drops significantly during early morning hours.
-
-When both conditions occur, the system identifies a potential eutrophication risk and generates an alert.
-
-> This is an early-warning indicator, not a definitive biological diagnosis. Further field testing and calibration are required.
-
-### 6. 💾 Local Data Logging
-
-The ESP32-C3 uses a MicroSD card to maintain historical records in CSV format.
-
-Example filename:
+### Real Power
 
 ```text
-2026_11_11.csv
+P = Voltage × Current × Power Factor
 ```
 
-The local logging system allows measurements to remain accessible even when the internet connection is unavailable.
+Where:
 
-Supported historical analysis targets:
-
-- Hourly measurements.
-- 7-day history.
-- 30-day history.
-- 12-month history.
-
-### 7. 📱 IoT Dashboard & Notifications
-
-The Wi-Fi Gateway connects the local system to external IoT services.
-
-| Platform | Function |
-|:---|:---|
-| Blynk IoT | Real-time monitoring dashboard |
-| Blynk SuperChart | Historical data visualization |
-| Blynk Remote Button | Remote aeration control |
-| Telegram Bot | Emergency notifications and alerts |
-
-Users can monitor pH, dissolved oxygen, and water temperature remotely.
-
-Telegram notifications are designed to report dangerous DO levels and potential eutrophication conditions.
+- P = Real Power (W)
 
 ---
 
-## 🔌 Hardware Components
+## ☁️ Cloud Monitoring
 
-| Component | Quantity | Role |
-|:---|:---:|:---|
-| ESP32-C3 | 1 | Central processing and control |
-| ESP8266 (ESP-12F / NodeMCU) | 2 | Sensor node and Wi-Fi gateway |
-| Industrial pH Probe | 1 | pH measurement |
-| Dissolved Oxygen Sensor | 1 | DO measurement |
-| Temperature Sensor | 1 | Water temperature measurement |
-| TFT Display | 1 | Local HMI |
-| MicroSD Module | 1 | Historical data storage |
-| Relay Module | 1 | Aeration equipment control |
-| Solar Panel | 1 | Renewable energy source |
-| Battery & Charging Circuit | 1 set | Energy storage and management |
+The ESP8266 periodically uploads processed measurement data to the Blynk platform.
 
-*Component specifications and quantities are subject to hardware selection and prototype development.*
+The dashboard provides:
+
+- Current monitoring
+- Voltage monitoring
+- Power visualization
+- Energy consumption tracking
+- Historical graphs
+- Consumption trends
 
 ---
 
-## 🔄 Communication Protocols
+## 📈 Data Analytics
 
-| Protocol | Application | Purpose |
-|:---|:---|:---|
-| ESP-NOW | ESP8266 ↔ ESP32-C3 | Wireless sensor data transmission |
-| SPI | ESP32-C3 ↔ TFT / MicroSD | Shared hardware communication bus |
-| UART | ESP32-C3 ↔ ESP8266 | Bidirectional serial communication |
-| Wi-Fi 802.11 b/g/n | ESP8266 Gateway | Internet connectivity |
-| HTTPS / MQTT API | Gateway ↔ IoT Services | Cloud data exchange |
+| Period | Analysis Type |
+|----------|----------------|
+| Every 90 Minutes | Measurement Update |
+| Daily | Daily Consumption |
+| Weekly | Average Weekly Usage |
+| Monthly | Monthly Trends |
+| Yearly | Annual Energy Analysis |
 
-### Shared SPI Bus
+These analytics help users understand long-term energy consumption patterns and identify abnormal loads.
 
-To overcome the limited GPIO availability of the ESP32-C3, the TFT display and MicroSD module share the same SPI bus.
+---
 
-The shared connections include:
+## 📱 Dashboard Preview
 
-- MOSI
-- MISO
-- SCK
+Add screenshots of your Blynk dashboard here.
 
-Each peripheral uses an independent Chip Select (CS) pin to ensure proper device selection.
+```text
+/docs/dashboard_mobile.png
+
+/docs/dashboard_graphs.png
+```
 
 ---
 
 ## 📂 Project Structure
 
-The repository is intended to follow a modular organization:
-
 ```text
-Aquaculture-IoT/
+Smart-Energy-Monitoring/
 │
-├── README.md
+├── ESP32-C3/
+│   ├── SensorAcquisition
+│   ├── PowerCalculation
+│   └── TFT_Display
 │
-├── firmware/
-│   ├── sensor-node/
-│   │   └── src/
-│   │
-│   ├── central-controller/
-│   │   └── src/
-│   │
-│   └── wifi-gateway/
-│       └── src/
+├── ESP8266/
+│   ├── UART_Receiver
+│   ├── WiFi_Manager
+│   └── Blynk_Uploader
 │
 ├── hardware/
-│   ├── schematics/
-│   ├── diagrams/
-│   └── components.md
+│   ├── schematic
+│   └── pcb
 │
-├── documentation/
-│   ├── architecture.md
-│   └── testing.md
+├── docs/
+│   ├── diagrams
+│   └── screenshots
 │
-├── data/
-│   └── example.csv
-│
-└── LICENSE
+└── README.md
 ```
 
-*This is a proposed repository structure; directories will be populated as development progresses.*
+---
+
+## 🚧 Project Status
+
+| Module | Status |
+|----------|----------|
+| Current Measurement | ✅ Completed |
+| Voltage Measurement | ✅ Completed |
+| TFT Display | ✅ Completed |
+| UART Communication | ✅ Completed |
+| Blynk Integration | ✅ Completed |
+| Historical Analysis | 🚧 In Progress |
+| Fault Detection | 📋 Planned |
 
 ---
 
-## 🚀 Development Goals
+## 🎯 Project Objectives
 
-The project is designed to progress through several development stages.
-
-- [ ] Assemble and test the sensor node.
-- [ ] Integrate pH, DO, and temperature sensors.
-- [ ] Implement ESP-NOW communication.
-- [ ] Develop the ESP32-C3 central controller.
-- [ ] Implement shared SPI communication.
-- [ ] Integrate TFT display and MicroSD logging.
-- [ ] Develop automatic and manual relay control.
-- [ ] Implement eutrophication risk analysis.
-- [ ] Integrate the ESP8266 Wi-Fi Gateway.
-- [ ] Connect Blynk IoT and Telegram Bot.
-- [ ] Implement solar power management.
-- [ ] Conduct real-world testing and calibration.
+1. Develop a low-cost energy monitoring solution.
+2. Monitor electrical parameters at a main distribution point.
+3. Separate sensing and communication tasks.
+4. Provide local and remote monitoring capabilities.
+5. Generate useful long-term consumption statistics.
+6. Explore practical IoT applications in energy management.
 
 ---
 
-## 🌱 Project Goals & Impact
+## ⚠️ Safety Notice
 
-This project aims to make aquaculture monitoring more accessible through affordable electronics, wireless communication, and renewable energy.
+This project involves interaction with AC electrical systems.
 
-Its main expected benefits include:
+All installation around circuit breakers, distribution boards, or mains wiring should only be performed by qualified personnel.
 
-- Reduced dependence on expensive wireless communication modules.
-- Improved awareness of changing pond water conditions.
-- Automated aeration based on dissolved oxygen measurements.
-- Reduced reliance on continuous manual monitoring.
-- Long-term environmental data collection.
-- Improved accessibility through remote monitoring.
+The microcontroller system must remain electrically isolated from hazardous voltages.
 
 ---
 
-## 🛠️ Technologies
+## 🚀 Future Improvements
 
-<p>
-  <img src="https://img.shields.io/badge/ESP32--C3-E7352C?style=flat-square&logo=espressif&logoColor=white" />
-  <img src="https://img.shields.io/badge/ESP8266-E7352C?style=flat-square&logo=espressif&logoColor=white" />
-  <img src="https://img.shields.io/badge/Arduino-00979D?style=flat-square&logo=arduino&logoColor=white" />
-  <img src="https://img.shields.io/badge/Blynk-23C48E?style=flat-square" />
-  <img src="https://img.shields.io/badge/Telegram-26A5E4?style=flat-square&logo=telegram&logoColor=white" />
-  <img src="https://img.shields.io/badge/CSV-217346?style=flat-square" />
-</p>
-
----
-
-## 📌 Project Status
-
-**Development Stage:** System Architecture & Hardware Planning
-
-The system architecture and component distribution have been designed. Hardware integration, firmware development, sensor calibration, and field testing are the next major milestones.
+- Power-factor measurement
+- More accurate real-power calculation
+- Local SD card storage
+- Custom web dashboard
+- CSV export
+- Anomaly detection
+- Power outage logging
+- Improved offline data buffering
+- Predictive energy usage analytics
 
 ---
 
-## 📄 License
+## 🛠 Technologies
 
-License information will be added when the project is ready for public release.
+- ESP32-C3
+- ESP8266
+- Arduino Framework
+- SCT-013 Current Transformer
+- UART Serial Communication
+- Wi-Fi
+- TFT Display
+- Blynk IoT Platform
 
 ---
 
-<p align="center">
-  <strong>🌊 Smarter Monitoring. Better Aquaculture. Sustainable Technology.</strong>
-</p>
+## 📜 License
 
-<p align="center">
-  Made with ❤️ for a more sustainable aquaculture future.
-</p>
+Apache License 2.0
+
+---
+
+# ⚡ Smart Energy Monitoring System
+
+### Real-Time Monitoring • Cloud Analytics • Energy Intelligence
+
+Built with ❤️ for smarter and more sustainable energy management.
