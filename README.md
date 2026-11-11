@@ -1,44 +1,63 @@
-# ⚡ Smart Energy Monitoring System
+# ⚡ Smart Energy Monitoring & Data Logging System
 
-### IoT-Based Electrical Energy Monitoring using ESP32-C3, ESP8266 and Blynk Cloud
+### IoT-Based Electrical Energy Monitoring with Local Visualization, CSV Logging and Cloud Analytics
 
-Monitor electrical energy consumption in real time through local visualization and cloud-based analytics.
+Monitor electrical energy consumption in real time through a TFT display, offline CSV storage, and cloud-based monitoring using Blynk.
 
 ![Platform](https://img.shields.io/badge/Platform-ESP32--C3-blue)
-![WiFi](https://img.shields.io/badge/WiFi-ESP8266-green)
+![Gateway](https://img.shields.io/badge/Gateway-ESP8266-green)
 ![Cloud](https://img.shields.io/badge/Cloud-Blynk-orange)
 ![Framework](https://img.shields.io/badge/Framework-Arduino-red)
-![Status](https://img.shields.io/badge/Status-Development-yellow)
+![Storage](https://img.shields.io/badge/Storage-MicroSD-purple)
+![Status](https://img.shields.io/badge/Status-Field_Testing-orange)
 
 ---
 
 ## 📖 Overview
 
-The Smart Energy Monitoring System is an IoT-based solution designed to measure, process, and visualize electrical consumption data at a main electrical distribution point.
+The Smart Energy Monitoring & Data Logging System is an IoT-based solution designed to measure, process, store, and visualize electrical energy consumption at a main electrical distribution point.
 
-Unlike conventional plug-in energy meters that only monitor individual appliances, this system is intended for monitoring larger electrical installations through non-invasive current sensing.
+Unlike conventional plug-in energy meters that monitor only individual appliances, this system is intended for monitoring larger electrical installations using non-invasive current sensing technology.
 
 The project utilizes a dual-microcontroller architecture:
 
-- **ESP32-C3** for sensor acquisition, calculation, and local display.
-- **ESP8266** for Wi-Fi communication and cloud integration through Blynk.
+### ESP32-C3
 
-The collected data is displayed locally and uploaded periodically for remote monitoring and historical analysis.
+Responsible for:
+
+- Current acquisition
+- Voltage acquisition
+- Power and energy calculations
+- Real-time TFT visualization
+- Historical graph rendering
+- CSV logging to MicroSD
+
+### ESP8266
+
+Responsible for:
+
+- UART communication
+- Wi-Fi connectivity
+- Blynk cloud synchronization
+- Remote monitoring services
+
+Measurement data is simultaneously stored locally and uploaded to the cloud, ensuring data availability even when internet connectivity is temporarily unavailable.
 
 ---
 
 ## ✨ Key Features
 
-- ⚡ Real-time current and voltage measurement
-- 📊 Apparent and real power calculation
+- ⚡ Real-time current and voltage monitoring
+- 📊 Apparent and real power calculations
 - 🔌 Non-invasive current sensing using SCT-013
-- 📺 Local TFT display visualization
-- 📡 UART communication between controllers
-- ☁️ Blynk cloud integration
+- 📺 TFT graphical visualization
+- 📈 Real-time energy consumption graphs
+- 💾 CSV data logging to MicroSD
+- ☁️ Blynk cloud synchronization
 - 📱 Mobile dashboard monitoring
-- 📈 Historical consumption analysis
+- 📡 UART communication between ESP32-C3 and ESP8266
 - 🕒 90-minute reporting interval
-- 📉 Long-term energy trend visualization
+- 🔒 Offline data retention during Wi-Fi outages
 
 ---
 
@@ -47,22 +66,25 @@ The collected data is displayed locally and uploaded periodically for remote mon
 ```mermaid
 flowchart TD
 
-A[Electrical Supply] --> B[SCT-013 Current Sensor]
+A[Electrical Supply]
+
+A --> B[SCT-013 Current Sensor]
 A --> C[AC Voltage Sensor]
 
 B --> D[ESP32-C3]
 C --> D
 
-D --> E[TFT Display]
+D --> TFT[TFT Display & Graphs]
 
-D -->|UART| F[ESP8266]
+D --> SD[MicroSD CSV Storage]
 
-F --> G[Wi-Fi Network]
+D -->|UART| E[ESP8266]
 
-G --> H[Blynk Cloud]
+E --> WIFI[Wi-Fi Network]
 
-H --> I[Mobile Dashboard]
-H --> J[Historical Analytics]
+WIFI --> BLYNK[Blynk Cloud]
+
+BLYNK --> APP[Mobile Dashboard]
 ```
 
 ---
@@ -72,19 +94,21 @@ H --> J[Historical Analytics]
 ```mermaid
 flowchart LR
 
-S[Sensors] --> P[ESP32-C3 Processing]
+S[Sensors]
 
-P --> D[TFT Display]
+S --> P[ESP32-C3 Processing]
 
-P --> U[UART Transfer]
+P --> TFT[TFT Visualization]
 
-U --> W[ESP8266]
+P --> SD[CSV Logger]
 
-W --> B[Blynk Server]
+P --> UART[UART Transmission]
 
-B --> M[Mobile Application]
+UART --> E[ESP8266]
 
-B --> A[Historical Analysis]
+E --> CLOUD[Blynk Cloud]
+
+CLOUD --> APP[Mobile Dashboard]
 ```
 
 ---
@@ -96,15 +120,22 @@ sequenceDiagram
 
 participant Sensor
 participant ESP32
+participant MicroSD
 participant ESP8266
 participant Blynk
 participant User
 
 Sensor->>ESP32: Voltage & Current Data
-ESP32->>ESP32: Process Electrical Measurements
+
+ESP32->>ESP32: Process Measurements
+
+ESP32->>MicroSD: Save CSV Record
+
 ESP32->>ESP8266: UART Transmission
+
 ESP8266->>Blynk: Upload Data
-Blynk->>User: Dashboard Visualization
+
+Blynk->>User: Dashboard Update
 ```
 
 ---
@@ -113,12 +144,13 @@ Blynk->>User: Dashboard Visualization
 
 | Component | Function |
 |------------|------------|
-| ESP32-C3 | Main controller and data processor |
-| ESP8266 | Wi-Fi and cloud communication |
-| SCT-013 | AC current measurement |
-| AC Voltage Sensor | Voltage monitoring |
-| 1.8-inch TFT Display | Local parameter visualization |
-| UART Connection | Controller communication |
+| ESP32-C3 | Main processor and data logger |
+| ESP8266 | Wi-Fi gateway and cloud communication |
+| SCT-013 Current Transformer | Non-invasive current sensing |
+| AC Voltage Sensor | Voltage measurement |
+| 1.8-inch TFT Display | Real-time local visualization |
+| MicroSD Module | Offline CSV storage |
+| UART Connection | Communication between controllers |
 | Power Supply | System power source |
 
 ---
@@ -127,10 +159,10 @@ Blynk->>User: Dashboard Visualization
 
 | Parameter | Unit | Description |
 |------------|--------|------------|
-| Current | A | Electrical current |
-| Voltage | V | AC supply voltage |
+| Current | A | RMS electrical current |
+| Voltage | V | RMS AC supply voltage |
 | Apparent Power | VA | Voltage × Current |
-| Real Power | W | Power considering power factor |
+| Real Power | W | Voltage × Current × Power Factor |
 | Energy Consumption | kWh | Accumulated energy usage |
 
 ### Apparent Power
@@ -159,16 +191,17 @@ Where:
 
 ## ☁️ Cloud Monitoring
 
-The ESP8266 periodically uploads processed measurement data to the Blynk platform.
+The ESP8266 periodically uploads processed measurements to the Blynk IoT platform.
 
 The dashboard provides:
 
 - Current monitoring
 - Voltage monitoring
-- Power visualization
+- Power monitoring
 - Energy consumption tracking
 - Historical graphs
-- Consumption trends
+- Consumption trend analysis
+- Remote accessibility
 
 ---
 
@@ -176,13 +209,52 @@ The dashboard provides:
 
 | Period | Analysis Type |
 |----------|----------------|
-| Every 90 Minutes | Measurement Update |
-| Daily | Daily Consumption |
-| Weekly | Average Weekly Usage |
-| Monthly | Monthly Trends |
-| Yearly | Annual Energy Analysis |
+| Every 90 Minutes | Measurement Record |
+| Daily | Consumption Statistics |
+| Weekly | Average Energy Usage |
+| Monthly | Energy Trends |
+| Yearly | Long-Term Usage Analysis |
 
-These analytics help users understand long-term energy consumption patterns and identify abnormal loads.
+These statistics help identify energy usage patterns and abnormal consumption events.
+
+---
+
+## 💾 Data Reliability
+
+The system employs a dual-storage architecture for improved reliability.
+
+### Local Storage
+
+All measurements are continuously stored on a MicroSD card in CSV format.
+
+Benefits include:
+
+- Offline operation
+- Backup data retention
+- Historical archives
+- Easy spreadsheet analysis
+- Protection against cloud outages
+
+Example:
+
+```text
+Date,Time,Voltage,Current,Power,Energy
+2026-03-15,14:30,220.4,5.12,1128.4,1.42
+2026-03-15,16:00,221.1,4.87,1076.7,1.58
+```
+
+### Cloud Storage
+
+Processed records are uploaded to Blynk Cloud through the ESP8266.
+
+Benefits include:
+
+- Remote access
+- Mobile dashboard visualization
+- Historical charting
+- Real-time monitoring
+
+The dual-storage design ensures that data remains available even during temporary Wi-Fi interruptions.
 
 ---
 
@@ -191,9 +263,8 @@ These analytics help users understand long-term energy consumption patterns and 
 Add screenshots of your Blynk dashboard here.
 
 ```text
-/docs/dashboard_mobile.png
-
-/docs/dashboard_graphs.png
+docs/dashboard_mobile.png
+docs/dashboard_graphs.png
 ```
 
 ---
@@ -206,12 +277,13 @@ Smart-Energy-Monitoring/
 ├── ESP32-C3/
 │   ├── SensorAcquisition
 │   ├── PowerCalculation
-│   └── TFT_Display
+│   ├── TFTVisualization
+│   └── CSVLogger
 │
 ├── ESP8266/
-│   ├── UART_Receiver
-│   ├── WiFi_Manager
-│   └── Blynk_Uploader
+│   ├── UARTReceiver
+│   ├── WiFiManager
+│   └── BlynkUploader
 │
 ├── hardware/
 │   ├── schematic
@@ -226,52 +298,44 @@ Smart-Energy-Monitoring/
 
 ---
 
-## 🚧 Project Status
+## ✅ Project Status
 
 | Module | Status |
 |----------|----------|
 | Current Measurement | ✅ Completed |
 | Voltage Measurement | ✅ Completed |
-| TFT Display | ✅ Completed |
+| Power Calculation | ✅ Completed |
+| Energy Monitoring | ✅ Completed |
+| TFT Visualization | ✅ Completed |
+| Real-Time Graph Rendering | ✅ Completed |
+| CSV Data Logging | ✅ Completed |
 | UART Communication | ✅ Completed |
+| ESP8266 Gateway | ✅ Completed |
 | Blynk Integration | ✅ Completed |
-| Historical Analysis | 🚧 In Progress |
-| Fault Detection | 📋 Planned |
+| Historical Analytics | ✅ Completed |
 
 ---
 
 ## 🎯 Project Objectives
 
-1. Develop a low-cost energy monitoring solution.
+1. Develop an affordable electrical energy monitoring solution.
 2. Monitor electrical parameters at a main distribution point.
-3. Separate sensing and communication tasks.
-4. Provide local and remote monitoring capabilities.
-5. Generate useful long-term consumption statistics.
-6. Explore practical IoT applications in energy management.
+3. Separate processing and communication tasks for improved reliability.
+4. Provide both local and remote monitoring interfaces.
+5. Maintain historical energy records locally and in the cloud.
+6. Demonstrate practical IoT applications in energy management.
 
 ---
 
 ## ⚠️ Safety Notice
 
-This project involves interaction with AC electrical systems.
+This trical systems.
 
-All installation around circuit breakers, distribution boards, or mains wiring should only be performed by qualified personnel.
+Installation around mains wiring, electrical distribution boards, or circuit breakers should only be performed by qualified personnel.
 
-The microcontroller system must remain electrically isolated from hazardous voltages.
+The microcontroller subsystem must remain properly isolated from hazardous voltages.
 
----
-
-## 🚀 Future Improvements
-
-- Power-factor measurement
-- More accurate real-power calculation
-- Local SD card storage
-- Custom web dashboard
-- CSV export
-- Anomaly detection
-- Power outage logging
-- Improved offline data buffering
-- Predictive energy usage analytics
+Current transformers, voltage sensors, and power supply circuits should be installed in accordance with their specifications and relevant electrical safety standards.
 
 ---
 
@@ -281,9 +345,11 @@ The microcontroller system must remain electrically isolated from hazardous volt
 - ESP8266
 - Arduino Framework
 - SCT-013 Current Transformer
+- AC Voltage Sensor
+- TFT Display
+- MicroSD Storage
 - UART Serial Communication
 - Wi-Fi
-- TFT Display
 - Blynk IoT Platform
 
 ---
@@ -294,8 +360,12 @@ Apache License 2.0
 
 ---
 
-# ⚡ Smart Energy Monitoring System
+# ⚡ Smart Energy Monitoring & Data Logging System
 
-### Real-Time Monitoring • Cloud Analytics • Energy Intelligence
+### Real-Time Monitoring • Local Data Logging • Cloud Analytics
 
-Built with ❤️ for smarter and more sustainable energy management.
+The system is currently under development and field testing to evaluate measurement accuracy, data reliability, and long-term operational stability.
+
+Built with ❤️ using ESP32-C3, ESP8266, MicroSD Storage and Blynk IoT.
+
+Reliable Monitoring • Offline Backup • Energy Intelligence
