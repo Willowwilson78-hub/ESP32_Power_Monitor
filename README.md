@@ -1,15 +1,15 @@
 # ⚡ Smart Energy Monitoring & Data Logging System
 
-### IoT-Based Electrical Energy Monitoring with Local Visualization, CSV Logging and Cloud Analytics
+### IoT-Based Electrical Energy Monitoring, Thermal Monitoring and Cloud Analytics
 
-Monitor electrical energy consumption in real time through a TFT display, offline CSV storage, and cloud-based monitoring using Blynk.
+Monitor electrical energy consumption and breaker temperature in real time through local visualization, offline CSV storage, and cloud-based monitoring using Blynk.
 
 ![Platform](https://img.shields.io/badge/Platform-ESP32--C3-blue)
 ![Gateway](https://img.shields.io/badge/Gateway-ESP8266-green)
 ![Cloud](https://img.shields.io/badge/Cloud-Blynk-orange)
 ![Framework](https://img.shields.io/badge/Framework-Arduino-red)
 ![Storage](https://img.shields.io/badge/Storage-MicroSD-purple)
-![Status](https://img.shields.io/badge/Status-Field_Testing-orange)
+![Status](https://img.shields.io/badge/Status-Field_Testing-yellow)
 
 ---
 
@@ -17,20 +17,21 @@ Monitor electrical energy consumption in real time through a TFT display, offlin
 
 The Smart Energy Monitoring & Data Logging System is an IoT-based solution designed to measure, process, store, and visualize electrical energy consumption at a main electrical distribution point.
 
-Unlike conventional plug-in energy meters that monitor only individual appliances, this system is intended for monitoring larger electrical installations using non-invasive current sensing technology.
+Unlike conventional plug-in energy meters that monitor individual appliances, this system is intended for monitoring larger electrical installations using non-invasive current sensing technology.
 
-The project utilizes a dual-microcontroller architecture:
+The project adopts a dual-microcontroller architecture.
 
 ### ESP32-C3
 
 Responsible for:
 
-- Current acquisition
-- Voltage acquisition
+- Current measurement using SCT-013
+- AC voltage measurement
 - Power and energy calculations
-- Real-time TFT visualization
+- Real-time TFT dashboard visualization
 - Historical graph rendering
-- CSV logging to MicroSD
+- CSV data logging to MicroSD
+- Main circuit breaker temperature monitoring
 
 ### ESP8266
 
@@ -39,9 +40,11 @@ Responsible for:
 - UART communication
 - Wi-Fi connectivity
 - Blynk cloud synchronization
-- Remote monitoring services
+- Remote dashboard updates
 
-Measurement data is simultaneously stored locally and uploaded to the cloud, ensuring data availability even when internet connectivity is temporarily unavailable.
+Measurement data is simultaneously stored locally and uploaded to the cloud, improving data availability during temporary network interruptions.
+
+The system is currently under prototype development and field testing to evaluate measurement accuracy, thermal monitoring effectiveness, and long-term operational stability.
 
 ---
 
@@ -50,13 +53,14 @@ Measurement data is simultaneously stored locally and uploaded to the cloud, ens
 - ⚡ Real-time current and voltage monitoring
 - 📊 Apparent and real power calculations
 - 🔌 Non-invasive current sensing using SCT-013
-- 📺 TFT graphical visualization
+- 🌡 Main breaker temperature monitoring
+- 🟢🟡🔴 Thermal load status indication
+- 📺 TFT graphical dashboard
 - 📈 Real-time energy consumption graphs
-- 💾 CSV data logging to MicroSD
+- 💾 CSV logging to MicroSD
 - ☁️ Blynk cloud synchronization
 - 📱 Mobile dashboard monitoring
-- 📡 UART communication between ESP32-C3 and ESP8266
-- 🕒 90-minute reporting interval
+- 📡 ESP32-C3 ↔ ESP8266 UART communication
 - 🔒 Offline data retention during Wi-Fi outages
 
 ---
@@ -71,10 +75,13 @@ A[Electrical Supply]
 A --> B[SCT-013 Current Sensor]
 A --> C[AC Voltage Sensor]
 
+T[Breaker Temperature Sensor]
+
 B --> D[ESP32-C3]
 C --> D
+T --> D
 
-D --> TFT[TFT Display & Graphs]
+D --> TFT[TFT Dashboard & Graphs]
 
 D --> SD[MicroSD CSV Storage]
 
@@ -98,7 +105,7 @@ S[Sensors]
 
 S --> P[ESP32-C3 Processing]
 
-P --> TFT[TFT Visualization]
+P --> TFT[TFT Dashboard]
 
 P --> SD[CSV Logger]
 
@@ -125,7 +132,7 @@ participant ESP8266
 participant Blynk
 participant User
 
-Sensor->>ESP32: Voltage & Current Data
+Sensor->>ESP32: Voltage, Current, Temperature
 
 ESP32->>ESP32: Process Measurements
 
@@ -148,7 +155,8 @@ Blynk->>User: Dashboard Update
 | ESP8266 | Wi-Fi gateway and cloud communication |
 | SCT-013 Current Transformer | Non-invasive current sensing |
 | AC Voltage Sensor | Voltage measurement |
-| 1.8-inch TFT Display | Real-time local visualization |
+| Temperature Sensor | Main breaker temperature monitoring |
+| 1.8-inch TFT Display | Local dashboard and graph visualization |
 | MicroSD Module | Offline CSV storage |
 | UART Connection | Communication between controllers |
 | Power Supply | System power source |
@@ -162,8 +170,36 @@ Blynk->>User: Dashboard Update
 | Current | A | RMS electrical current |
 | Voltage | V | RMS AC supply voltage |
 | Apparent Power | VA | Voltage × Current |
-| Real Power | W | Voltage × Current × Power Factor |
+| Real Power* | W | Voltage × Current × Power Factor |
 | Energy Consumption | kWh | Accumulated energy usage |
+| Breaker Temperature | °C | Surface temperature of main breaker |
+| Thermal Status | Green / Yellow / Red | Breaker condition indicator |
+
+\* Real-power accuracy depends on the selected measurement implementation and power-factor calculations.
+
+---
+
+## 🌡 Main Breaker Temperature Monitoring
+
+To improve electrical safety, the system continuously monitors the surface temperature of the main circuit breaker.
+
+The temperature sensor is attached to the breaker enclosure and provides real-time thermal information.
+
+### Thermal Status Indicators
+
+| Status | Indicator | Description |
+|----------|----------|----------|
+| Cool | 🟢 Green | Normal operating condition |
+| Warm | 🟡 Yellow | Elevated thermal load |
+| Hot | 🔴 Red | Potential overheating condition |
+
+Thermal status is updated in real time on the TFT dashboard and can also be uploaded to Blynk Cloud for remote monitoring.
+
+Temperature thresholds are configurable and may be adjusted according to breaker specifications and installation conditions.
+
+---
+
+## ⚡ Electrical Power Calculations
 
 ### Apparent Power
 
@@ -187,18 +223,32 @@ Where:
 
 - P = Real Power (W)
 
+### Energy Consumption
+
+```text
+Energy = Power × Time
+```
+
+Reported in:
+
+```text
+kWh (Kilowatt-hours)
+```
+
 ---
 
 ## ☁️ Cloud Monitoring
 
-The ESP8266 periodically uploads processed measurements to the Blynk IoT platform.
+The ESP8266 periodically uploads processed measurement records to the Blynk IoT platform.
 
-The dashboard provides:
+The cloud dashboard provides:
 
 - Current monitoring
 - Voltage monitoring
 - Power monitoring
 - Energy consumption tracking
+- Breaker temperature monitoring
+- Thermal status indication
 - Historical graphs
 - Consumption trend analysis
 - Remote accessibility
@@ -235,12 +285,13 @@ Benefits include:
 - Easy spreadsheet analysis
 - Protection against cloud outages
 
-Example:
+### Example CSV Record
 
 ```text
-Date,Time,Voltage,Current,Power,Energy
-2026-03-15,14:30,220.4,5.12,1128.4,1.42
-2026-03-15,16:00,221.1,4.87,1076.7,1.58
+Date,Time,Voltage,Current,Power,Energy,Temperature,Status
+2026-03-15,14:30,220.4,5.12,1128.4,1.42,34.5,Cool
+2026-03-15,16:00,221.1,4.87,1076.7,1.58,46.2,Warm
+2026-03-15,18:00,220.7,8.91,1966.4,1.93,61.8,Hot
 ```
 
 ### Cloud Storage
@@ -254,13 +305,20 @@ Benefits include:
 - Historical charting
 - Real-time monitoring
 
-The dual-storage design ensures that data remains available even during temporary Wi-Fi interruptions.
+The dual-storage design is intended to improve data availability during temporary Wi-Fi interruptions and cloud service outages.
 
 ---
 
 ## 📱 Dashboard Preview
 
+Add screenshots of your TFT dashboard and Blynk dashboard here.
 
+```text
+docs/tft_dashboard.png
+
+docs/blynk_mobile_dashboard.png
+
+docs/blynk_history_graph.png
 ```
 
 ---
@@ -273,6 +331,7 @@ Smart-Energy-Monitoring/
 ├── ESP32-C3/
 │   ├── SensorAcquisition
 │   ├── PowerCalculation
+│   ├── TemperatureMonitoring
 │   ├── TFTVisualization
 │   └── CSVLogger
 │
@@ -287,28 +346,39 @@ Smart-Energy-Monitoring/
 │
 ├── docs/
 │   ├── diagrams
-│   └── screenshots
+│   ├── screenshots
+│   └── reports
 │
 └── README.md
 ```
 
 ---
 
-## ✅ Project Status
+## 🚧 Project Status
+
+**Development Stage:** Prototype Development & Field Testing
+
+The hardware architecture and firmware framework have been implemented.
+
+The project is currently undergoing calibration, thermal validation, long-term reliability testing, and cloud integration verification.
 
 | Module | Status |
 |----------|----------|
-| Current Measurement | ✅ Completed |
-| Voltage Measurement | ✅ Completed |
-| Power Calculation | ✅ Completed |
-| Energy Monitoring | ✅ Completed |
-| TFT Visualization | ✅ Completed |
-| Real-Time Graph Rendering | ✅ Completed |
-| CSV Data Logging | ✅ Completed |
-| UART Communication | ✅ Completed |
-| ESP8266 Gateway | ✅ Completed |
-| Blynk Integration | ✅ Completed |
-| Historical Analytics | ✅ Completed |
+| Current Measurement | ✅ Implemented |
+| Voltage Measurement | ✅ Implemented |
+| Power Calculation | ✅ Implemented |
+| Energy Monitoring | ✅ Implemented |
+| TFT Visualization | ✅ Implemented |
+| Graph Rendering | ✅ Implemented |
+| CSV Data Logging | ✅ Implemented |
+| Main Breaker Temperature Monitoring | ✅ Implemented |
+| UART Communication | ✅ Implemented |
+| ESP8266 Gateway | ✅ Implemented |
+| Blynk Integration | ✅ Implemented |
+| Sensor Calibration | 🚧 Testing |
+| Thermal Validation | 🚧 Testing |
+| Long-Term Reliability Testing | 🚧 Ongoing |
+| Field Deployment Testing | 🚧 Ongoing |
 
 ---
 
@@ -316,22 +386,24 @@ Smart-Energy-Monitoring/
 
 1. Develop an affordable electrical energy monitoring solution.
 2. Monitor electrical parameters at a main distribution point.
-3. Separate processing and communication tasks for improved reliability.
-4. Provide both local and remote monitoring interfaces.
-5. Maintain historical energy records locally and in the cloud.
-6. Demonstrate practical IoT applications in energy management.
+3. Monitor breaker temperature for improved electrical safety.
+4. Separate processing and communication tasks for improved reliability.
+5. Provide both local and remote monitoring interfaces.
+6. Maintain historical data locally and in the cloud.
+7. Support long-term energy consumption analysis.
+8. Explore practical IoT applications in energy management.
 
 ---
 
 ## ⚠️ Safety Notice
 
-This trical systems.
+This project involves monitoring AC electrical systems.
 
 Installation around mains wiring, electrical distribution boards, or circuit breakers should only be performed by qualified personnel.
 
 The microcontroller subsystem must remain properly isolated from hazardous voltages.
 
-Current transformers, voltage sensors, and power supply circuits should be installed in accordance with their specifications and relevant electrical safety standards.
+Current transformers, voltage sensors, temperature sensors, and power supply circuits should be installed in accordance with their specifications and relevant electrical safety standards.
 
 ---
 
@@ -342,6 +414,7 @@ Current transformers, voltage sensors, and power supply circuits should be insta
 - Arduino Framework
 - SCT-013 Current Transformer
 - AC Voltage Sensor
+- Temperature Sensor
 - TFT Display
 - MicroSD Storage
 - UART Serial Communication
@@ -358,10 +431,8 @@ Apache License 2.0
 
 # ⚡ Smart Energy Monitoring & Data Logging System
 
-### Real-Time Monitoring • Local Data Logging • Cloud Analytics
+### Real-Time Monitoring • Thermal Monitoring • Local Data Logging • Cloud Analytics
 
-The system is currently under development and field testing to evaluate measurement accuracy, data reliability, and long-term operational stability.
+Built with ❤️ using ESP32-C3, ESP8266, TFT Display, MicroSD Storage and Blynk IoT.
 
-Built with ❤️ using ESP32-C3, ESP8266, MicroSD Storage and Blynk IoT.
-
-Reliable Monitoring • Offline Backup • Energy Intelligence
+Energy Intelligence • Thermal Awareness • Reliable Data Collection
