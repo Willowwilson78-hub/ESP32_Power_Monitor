@@ -409,6 +409,12 @@ Current transformers, voltage sensors, temperature sensors, and power supplies s
 - Blynk IoT Platform
 
 ---
+## PCB
+
+
+<img width="4000" height="2412" alt="Gerber_PCB1_2026-11-13-layers" src="https://github.com/user-attachments/assets/7b0c625a-f625-4f6c-b710-d77a0259255d" />
+
+---
 
 ## 📜 License
 
