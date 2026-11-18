@@ -411,8 +411,8 @@ Current transformers, voltage sensors, temperature sensors, and power supplies s
 ---
 ## PCB
 
+<img width="4000" height="2963" alt="ESP Monitor(full fix)(làm nhanh)-layers" src="https://github.com/user-attachments/assets/a6dba7e3-58b4-4718-83ec-4313e14a9517" />
 
-<img width="4000" height="2412" alt="Gerber_PCB1_2026-11-13-layers" src="https://github.com/user-attachments/assets/7b0c625a-f625-4f6c-b710-d77a0259255d" />
 
 ---
 
